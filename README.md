@@ -1,6 +1,8 @@
 # echooo
 色付けオプション付き echo
 
+![cmdline](https://github.com/customtea/echoo/blob/fig/fig/commandline.png)
+
 ## 概要
 文字色と背景色をオプションで雑に指定できるechoコマンド
 
@@ -109,6 +111,7 @@ OPTIONS:
 行頭でのコマンド処理
 \{strike}取り消して\{n_strike}取り消し線の解除
 ```
+![metafile](https://github.com/customtea/echoo/blob/fig/fig/fileload.png)
 
 ## ToDo
 - 色指定を増やす
