@@ -1,6 +1,37 @@
 use colored::{Colorize, ColoredString};
 use std::{i64, num::{ParseIntError}};
 
+pub fn colorlist(){
+    println!("--Available Color List--");
+    println!("{}:{}", "  ".on_black(),      "black".black());
+    println!("{}:{}", "  ".on_red(),        "red".red());
+    println!("{}:{}", "  ".on_green(),      "green".green());
+    println!("{}:{}", "  ".on_yellow(),     "yellow".yellow());
+    println!("{}:{}", "  ".on_blue(),       "blue".blue());
+    println!("{}:{}", "  ".on_magenta(),    "magenta".magenta());
+    println!("{}:{}", "  ".on_purple(),     "purple".purple());
+    println!("{}:{}", "  ".on_cyan(),       "cyan".cyan());
+    println!("{}:{}", "  ".on_white(),      "white".white());
+    println!("{}:{}", "  ".on_bright_black(),       "bright_black".bright_black());
+    println!("{}:{}", "  ".on_bright_red(),         "bright_red".bright_red());
+    println!("{}:{}", "  ".on_bright_green(),       "bright_green".bright_green());
+    println!("{}:{}", "  ".on_bright_yellow(),      "bright_yellow".bright_yellow());
+    println!("{}:{}", "  ".on_bright_blue(),        "bright_blue".bright_blue());
+    println!("{}:{}", "  ".on_bright_magenta(),     "bright_magenta".bright_magenta());
+    println!("{}:{}", "  ".on_bright_purple(),      "bright_purple".bright_purple());
+    println!("{}:{}", "  ".on_bright_cyan(),        "bright_cyan".bright_cyan());
+    println!("{}:{}", "  ".on_bright_white(),       "bright_white".bright_white());
+    println!("{}:{}", "  ".on_truecolor(0xDD, 0xDD, 0xDD), "silver".truecolor(0xDD, 0xDD, 0xDD));
+    println!("{}:{}", "  ".on_truecolor(0xAA, 0xAA, 0xAA), "gray".truecolor(0xAA, 0xAA, 0xAA));
+    println!("{}:{}", "  ".on_truecolor(0x85, 0x14, 0x4B), "maroon".truecolor(0x85, 0x14, 0x4B));
+    println!("{}:{}", "  ".on_truecolor(0x3D, 0x99, 0x79), "olive".truecolor(0x3D, 0x99, 0x79));
+    println!("{}:{}", "  ".on_truecolor(0x01, 0xFF, 0x70), "lime".truecolor(0x01, 0xFF, 0x70));
+    println!("{}:{}", "  ".on_truecolor(0x7F, 0xDB, 0xFF), "aqua".truecolor(0x7F, 0xDB, 0xFF));
+    println!("{}:{}", "  ".on_truecolor(0x39, 0xCC, 0xCC), "teal".truecolor(0x39, 0xCC, 0xCC));
+    println!("{}:{}", "  ".on_truecolor(0x00, 0x1F, 0x3F), "navy".truecolor(0x00, 0x1F, 0x3F));
+    println!("{}:{}", "  ".on_truecolor(0xF0, 0x12, 0xBE), "fuchsia".truecolor(0xF0, 0x12, 0xBE));
+    println!("--list end--")
+}
 
 #[derive(Debug, Clone)]
 pub struct TextColorParam {
