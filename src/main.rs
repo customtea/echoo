@@ -1,4 +1,4 @@
-use color_text::TextColorParam;
+use color_text::{TextColorParam, colorlist};
 use clap::Parser;
 use std::fs::File;
 use std::io::{BufRead, BufReader, stdout, Write};
@@ -9,16 +9,16 @@ mod color_text;
 #[derive(Parser, Debug)]
 #[clap(
     name = "ecohoo",
-    version = "1.0.0",
+    version = "1.2.0",
     author = "CustomTea",
     about = "colorized echo"
 )]
 struct Opts {
-    /// Set Front Color (black, red, green, yellow, blue, magenta, cyan, white, "#85144B", bright_red,...)
+    /// Set Front Color 
     #[clap(short, long)]
     front_color: Option<String>,
     
-    /// Set Background Color (black, red, green, yellow, blue, magenta, cyan, white, "#3D9979", bright_red,...)
+    /// Set Background Color 
     #[clap(short, long)]
     back_color: Option<String>,
     
@@ -57,6 +57,10 @@ struct Opts {
     /// Strike through
     #[clap(long)]
     strike: bool,
+    
+    /// Color list
+    #[clap(short, long)]
+    list: bool,
 
     /// Text
     #[clap(name = "String")]
@@ -209,6 +213,11 @@ fn text_parser(param: &mut TextColorParam, text: String){
 
 fn main() {
     let opts = Opts::parse();
+    
+    if opts.list {
+        colorlist();
+        return
+    }
     
     if let Some(path) = opts.file {
         let file = File::open(path).expect("File Open Error");
