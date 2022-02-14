@@ -14,7 +14,7 @@ pub struct TextColorParam {
     pub reverse: bool,
     pub blink: bool,
     pub hidden: bool,
-    pub through: bool,
+    pub strike: bool,
 }
 
 impl TextColorParam {
@@ -30,9 +30,24 @@ impl TextColorParam {
             reverse: false,
             blink: false,
             hidden: false,
-            through: false,
+            strike: false,
         };
         return param
+    }
+    
+    pub fn clear(&mut self){
+        self.front_color = None;
+        self.back_color = None;
+        self.no_newline = false;
+        self.bold = false;
+        self.under = false;
+        self.italic = false;
+        self.dimmed = false;
+        self.dimmed = false;
+        self.reverse = false;
+        self.blink = false;
+        self.hidden = false;
+        self.strike = false;
     }
     
     fn hex_to_rgb(&self, colorcode: &String) -> (u8, u8, u8){
@@ -78,6 +93,15 @@ impl TextColorParam {
                 "bright_purple" =>  colored_text = text.bright_purple(),
                 "bright_cyan" =>    colored_text = text.bright_cyan(),
                 "bright_white" =>   colored_text = text.bright_white(),
+                "silver" =>     colored_text = text.truecolor(0xDD, 0xDD, 0xDD),
+                "gray" =>       colored_text = text.truecolor(0xAA, 0xAA, 0xAA),
+                "maroon" =>     colored_text = text.truecolor(0x85, 0x14, 0x4B),
+                "olive" =>      colored_text = text.truecolor(0x3D, 0x99, 0x79),
+                "lime" =>       colored_text = text.truecolor(0x01, 0xFF, 0x70),
+                "aqua" =>       colored_text = text.truecolor(0x7F, 0xDB, 0xFF),
+                "teal" =>       colored_text = text.truecolor(0x39, 0xCC, 0xCC),
+                "navy" =>       colored_text = text.truecolor(0x00, 0x1F, 0x3F),
+                "fuchsia" =>    colored_text = text.truecolor(0xF0, 0x12, 0xBE),
                 _ => {
                     if color.len() == 7 && color.chars().nth(0).unwrap_or(' ') == '#'{
                         let (r,g,b) = self.hex_to_rgb(&color);
@@ -110,6 +134,15 @@ impl TextColorParam {
                 "bright_purple" =>     colored_text = colored_text.on_bright_purple(),
                 "bright_cyan" =>       colored_text = colored_text.on_bright_cyan(),
                 "bright_white" =>      colored_text = colored_text.on_bright_white(),
+                "silver" =>     colored_text = text.on_truecolor(0xDD, 0xDD, 0xDD),
+                "gray" =>       colored_text = text.on_truecolor(0xAA, 0xAA, 0xAA),
+                "maroon" =>     colored_text = text.on_truecolor(0x85, 0x14, 0x4B),
+                "olive" =>      colored_text = text.on_truecolor(0x3D, 0x99, 0x79),
+                "lime" =>       colored_text = text.on_truecolor(0x01, 0xFF, 0x70),
+                "aqua" =>       colored_text = text.on_truecolor(0x7F, 0xDB, 0xFF),
+                "teal" =>       colored_text = text.on_truecolor(0x39, 0xCC, 0xCC),
+                "navy" =>       colored_text = text.on_truecolor(0x00, 0x1F, 0x3F),
+                "fuchsia" =>    colored_text = text.on_truecolor(0xF0, 0x12, 0xBE),
                 _ => {
                     if color.len() == 7 && color.chars().nth(0).unwrap_or(' ') == '#'{
                         let (r,g,b) = self.hex_to_rgb(&color);
@@ -131,7 +164,7 @@ impl TextColorParam {
         if self.reverse{ deco_text = deco_text.reversed(); }
         if self.blink{ deco_text = deco_text.blink(); }
         if self.hidden{ deco_text = deco_text.hidden(); }
-        if self.through{ deco_text = deco_text.strikethrough(); }
+        if self.strike{ deco_text = deco_text.strikethrough(); }
         
         return deco_text
     }
