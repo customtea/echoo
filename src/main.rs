@@ -56,7 +56,7 @@ struct Opts {
 
     /// Strike through
     #[clap(long)]
-    through: bool,
+    strike: bool,
 
     /// Text
     #[clap(name = "String")]
@@ -83,7 +83,7 @@ fn text_out(opts: Opts){
         reverse: opts.reverse,
         blink: opts.blink,
         hidden: opts.hidden,
-        through: opts.through,
+        strike: opts.strike,
     };
     param.show(text);
 }
@@ -91,6 +91,7 @@ fn text_out(opts: Opts){
 fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
     let mut is_prefix = false;
     let mut is_prefix_end = false;
+    let mut is_style = Some(true);
     let mut is_frontcolor = None;
     let mut cmd:Vec<char> = Vec::new();
     for c in cmd_buf{
@@ -103,9 +104,13 @@ fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
             }
             'b' => if !is_prefix && !is_prefix_end{
                 is_prefix = true;
-                is_frontcolor = Some(true);
+                is_frontcolor = Some(false);
             }else{
                 cmd.push(*c);
+            }
+            'n' => if !is_prefix && !is_prefix_end{
+                is_prefix = true;
+                is_style = Some(false);
             }
             '_' => if is_prefix{
                 is_prefix = true;
@@ -121,21 +126,44 @@ fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
     let cmd = cmd.iter().collect::<String>();
     match is_frontcolor {
         Some(front) => if front {
-            param.front_color = Some(cmd);
+            match cmd.as_str() {
+                "claer" => {
+                    param.front_color = None;
+                    return 
+                    }
+                _ => {
+                    param.front_color = Some(cmd);
+                    return
+                }
+            }
         }else{
-            param.front_color = Some(cmd);
+            match cmd.as_str() {
+                "clear" => {
+                    param.back_color = None;
+                    return 
+                    }
+                _ => {
+                    param.back_color = Some(cmd);
+                    return
+                }
+            }
         }
-        None => match cmd.as_str(){
-            "bold" => param.bold = true,
-            "under" => param.under = true,
-            "italic" => param.italic = true,
-            "dimmed" => param.dimmed = true,
-            "reverse" => param.reverse = true,
-            "blink" => param.blink = true,
-            "hidden" => param.hidden = true,
-            "through" => param.through = true,
-            _ => (),
-        }
+        None => (),
+    }
+    match is_style {
+        Some(style_on) => match cmd.as_str(){
+                "bold" => param.bold = style_on,
+                "under" => param.under = style_on,
+                "italic" => param.italic = style_on,
+                "dimmed" => param.dimmed = style_on,
+                "reverse" => param.reverse = style_on,
+                "blink" => param.blink = style_on,
+                "hidden" => param.hidden = style_on,
+                "strike" => param.strike = style_on,
+                "clear" => param.clear(),
+                _ => (),
+            }
+        None => (),
     }
 }
 
