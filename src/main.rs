@@ -1,20 +1,24 @@
-use colored::{Colorize};
+use color_text::{TextColorParam, colorlist};
 use clap::Parser;
-use std::i64;
+use std::fs::File;
+use std::io::{BufRead, BufReader, stdout, Write};
+
+mod color_text;
+
 
 #[derive(Parser, Debug)]
 #[clap(
     name = "ecohoo",
-    version = "1.0.0",
+    version = "1.2.0",
     author = "CustomTea",
     about = "colorized echo"
 )]
 struct Opts {
-    /// Set Front Color (black, red, green, yellow, blue, magenta, cyan, white, "#85144B", bright_red,...)
+    /// Set Front Color 
     #[clap(short, long)]
     front_color: Option<String>,
     
-    /// Set Background Color (black, red, green, yellow, blue, magenta, cyan, white, "#3D9979", bright_red,...)
+    /// Set Background Color 
     #[clap(short, long)]
     back_color: Option<String>,
     
@@ -52,135 +56,180 @@ struct Opts {
 
     /// Strike through
     #[clap(long)]
-    through: bool,
-
+    strike: bool,
     
+    /// Color list
+    #[clap(short, long)]
+    list: bool,
+
     /// Text
     #[clap(name = "String")]
     text: Vec<String>,
-}
-
-fn colorcode_convert(colorcode: String) -> (u8, u8, u8){
-    let red = i64::from_str_radix(&colorcode[1..3], 16);
-    let green = i64::from_str_radix(&colorcode[3..5], 16);
-    let blue = i64::from_str_radix(&colorcode[5..7], 16);
     
-    let red:u8 = match red {
-        Ok(n) => n as u8,
-        Err(_) => 0,
-    };
-    let green: u8 = match green {
-        Ok(n) => n as u8,
-        Err(_) => 0,
-    };
-    let blue: u8 = match blue {
-        Ok(n) => n as u8,
-        Err(_) => 0,
-    };
-
-    return (red, green, blue)
+    /// File
+    #[clap(long, name="FILE")]
+    file: Option<String>,
 }
+
+
+
+fn text_out(opts: Opts){
+    let text = opts.text.join(" ");
+    
+    let param = TextColorParam {
+        front_color: opts.front_color,
+        back_color: opts.back_color,
+        no_newline: opts.no_newline,
+        bold: opts.bold,
+        under: opts.under,
+        italic: opts.italic,
+        dimmed: opts.dimmed,
+        reverse: opts.reverse,
+        blink: opts.blink,
+        hidden: opts.hidden,
+        strike: opts.strike,
+    };
+    param.show(text);
+}
+
+fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
+    let mut is_prefix = false;
+    let mut is_prefix_end = false;
+    let mut is_style = Some(true);
+    let mut is_frontcolor = None;
+    let mut cmd:Vec<char> = Vec::new();
+    for c in cmd_buf{
+        match c {
+            'f' => if !is_prefix && !is_prefix_end{
+                is_prefix = true;
+                is_frontcolor = Some(true);
+            }else{
+                cmd.push(*c);
+            }
+            'b' => if !is_prefix && !is_prefix_end{
+                is_prefix = true;
+                is_frontcolor = Some(false);
+            }else{
+                cmd.push(*c);
+            }
+            'n' => if !is_prefix && !is_prefix_end{
+                is_prefix = true;
+                is_style = Some(false);
+            }
+            '_' => if is_prefix{
+                is_prefix = true;
+                is_prefix_end = true;
+            }else{
+                cmd.push(*c);
+            }
+            _ => {
+                cmd.push(*c);
+            }
+        }
+    }
+    let cmd = cmd.iter().collect::<String>();
+    match is_frontcolor {
+        Some(front) => if front {
+            match cmd.as_str() {
+                "claer" => {
+                    param.front_color = None;
+                    return 
+                    }
+                _ => {
+                    param.front_color = Some(cmd);
+                    return
+                }
+            }
+        }else{
+            match cmd.as_str() {
+                "clear" => {
+                    param.back_color = None;
+                    return 
+                    }
+                _ => {
+                    param.back_color = Some(cmd);
+                    return
+                }
+            }
+        }
+        None => (),
+    }
+    match is_style {
+        Some(style_on) => match cmd.as_str(){
+                "bold" => param.bold = style_on,
+                "under" => param.under = style_on,
+                "italic" => param.italic = style_on,
+                "dimmed" => param.dimmed = style_on,
+                "reverse" => param.reverse = style_on,
+                "blink" => param.blink = style_on,
+                "hidden" => param.hidden = style_on,
+                "strike" => param.strike = style_on,
+                "clear" => param.clear(),
+                _ => (),
+            }
+        None => (),
+    }
+}
+
+
+fn text_parser(param: &mut TextColorParam, text: String){
+    let mut is_escape = false;
+    let mut is_block = false;
+    let mut cmd_buf: Vec<char> = Vec::new();
+    let mut nom_buf: Vec<char> = Vec::new();
+    param.no_newline = true;
+    //let mut char_count = 0;
+    for c in text.chars(){
+        match c {
+            '\\' => if is_escape{ is_escape = false; }else{ is_escape = true; }
+            '{' => if is_escape{ is_block = true}else{ is_block = false}
+            '}' => if is_escape && is_block {
+                is_escape = false;
+                is_block = false;
+                let t_text = nom_buf.iter().collect::<String>();
+                param.show(t_text);
+                cmd_parser(param, &cmd_buf);
+                
+                cmd_buf.clear();
+                nom_buf.clear();
+            }
+            _ => if is_escape && is_block{
+                cmd_buf.push(c);
+            } else {
+                nom_buf.push(c);
+                //println!("{}",c);
+            }
+        }
+        //char_count += 1;
+    }
+    param.no_newline = false;
+    let t_text = nom_buf.iter().collect::<String>();
+    param.show(t_text);
+    cmd_buf.clear();
+    nom_buf.clear();
+}
+
+
 
 fn main() {
     let opts = Opts::parse();
     
-    let text = opts.text.join(" ");
-    
-    let mut colored_text = text.normal();
-    match opts.front_color {
-        Some(color) => match color.as_str() {
-            "black" =>      colored_text = text.black(),
-            "red" =>        colored_text = text.red(),
-            "green" =>      colored_text = text.green(),
-            "yellow" =>     colored_text = text.yellow(),
-            "blue" =>       colored_text = text.blue(),
-            "magenta" =>    colored_text = text.magenta(),
-            "purple" =>     colored_text = text.purple(),
-            "cyan" =>       colored_text = text.cyan(),
-            "white" =>      colored_text = text.white(),
-            "bright_black" =>   colored_text = text.bright_black(),
-            "bright_red" =>     colored_text = text.bright_red(),
-            "bright_green" =>   colored_text = text.bright_green(),
-            "bright_yellow" =>  colored_text = text.bright_yellow(),
-            "bright_blue" =>    colored_text = text.bright_blue(),
-            "bright_magenta" => colored_text = text.bright_magenta(),
-            "bright_purple" =>  colored_text = text.bright_purple(),
-            "bright_cyan" =>    colored_text = text.bright_cyan(),
-            "bright_white" =>   colored_text = text.bright_white(),
-            _ => {
-                if color.len() == 7 && color.chars().nth(0).unwrap() == '#'{
-                    let (r,g,b) = colorcode_convert(color);
-                    colored_text = text.truecolor(r, g, b)
-                }else{
-                    colored_text = text.normal()
-                }
-            }
-        },
-        None => colored_text = text.normal(),
+    if opts.list {
+        colorlist();
+        return
     }
     
-    match opts.back_color {
-        Some(color) => match color.as_str() {
-            "black" =>      colored_text = colored_text.on_black(),
-            "red" =>        colored_text = colored_text.on_red(),
-            "green" =>      colored_text = colored_text.on_green(),
-            "yellow" =>     colored_text = colored_text.on_yellow(),
-            "blue" =>       colored_text = colored_text.on_blue(),
-            "magenta" =>    colored_text = colored_text.on_magenta(),
-            "purple" =>     colored_text = colored_text.on_purple(),
-            "cyan" =>       colored_text = colored_text.on_cyan(),
-            "white" =>      colored_text = colored_text.on_white(),
-            "bright_black" =>      colored_text = colored_text.on_bright_black(),
-            "bright_red" =>        colored_text = colored_text.on_bright_red(),
-            "bright_green" =>      colored_text = colored_text.on_bright_green(),
-            "bright_yellow" =>     colored_text = colored_text.on_bright_yellow(),
-            "bright_blue" =>       colored_text = colored_text.on_bright_blue(),
-            "bright_magenta" =>    colored_text = colored_text.on_bright_magenta(),
-            "bright_purple" =>     colored_text = colored_text.on_bright_purple(),
-            "bright_cyan" =>       colored_text = colored_text.on_bright_cyan(),
-            "bright_white" =>      colored_text = colored_text.on_bright_white(),
-            _ => {
-                if color.len() == 7 && color.chars().nth(0).unwrap() == '#'{
-                    let (r,g,b) = colorcode_convert(color);
-                    colored_text = colored_text.on_truecolor(r, g, b)
-                }else{
-                    colored_text = colored_text
-                }
-            }
-        },
-        None => colored_text = colored_text
-    }
-    
-    let mut deco_text = colored_text;
-
-    if opts.bold{
-        deco_text = deco_text.bold();
-    }
-    if opts.under{
-        deco_text = deco_text.underline();
-    }
-    if opts.italic{
-        deco_text = deco_text.italic();
-    }
-    if opts.dimmed{
-        deco_text = deco_text.dimmed();
-    }
-    if opts.reverse{
-        deco_text = deco_text.reversed();
-    }
-    if opts.blink{
-        deco_text = deco_text.blink();
-    }
-    if opts.hidden{
-        deco_text = deco_text.hidden();
-    }
-    if opts.through{
-        deco_text = deco_text.strikethrough();
-    }
-
-    if opts.no_newline {
-        print!("{}", deco_text)
+    if let Some(path) = opts.file {
+        let file = File::open(path).expect("File Open Error");
+        let file_reader = BufReader::new(file);
+        
+        let mut param: TextColorParam = TextColorParam::new();
+        for line in file_reader.lines() {
+            let line = line.unwrap();
+            text_parser(&mut param, line);
+        } 
+        
     }else{
-        println!("{}", deco_text)
+        text_out(opts);
     }
 }
