@@ -9,7 +9,7 @@ mod color_text;
 #[derive(Parser, Debug)]
 #[clap(
     name = "ecohoo",
-    version = "1.2.0",
+    version = "1.2.1",
     author = "CustomTea",
     about = "colorized echo"
 )]
