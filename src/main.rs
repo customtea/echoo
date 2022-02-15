@@ -118,7 +118,7 @@ fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
             }else{
                 cmd.push(*c);
             }
-            '_' => if is_prefix{
+            '_' => if is_prefix&& !is_prefix_end{
                 is_prefix = true;
                 is_prefix_end = true;
             }else{
