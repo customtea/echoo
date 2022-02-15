@@ -9,7 +9,7 @@ mod color_text;
 #[derive(Parser, Debug)]
 #[clap(
     name = "ecohoo",
-    version = "1.2.1",
+    version = "1.2.3",
     author = "CustomTea",
     about = "colorized echo"
 )]
@@ -185,16 +185,25 @@ fn text_parser(param: &mut TextColorParam, text: String){
     for c in text.chars(){
         match c {
             '\\' => if is_escape{ is_escape = false; }else{ is_escape = true; }
-            '{' => if is_escape{ is_block = true}else{ is_block = false}
-            '}' => if is_escape && is_block {
-                is_escape = false;
+            '{' => if is_escape{ 
+                is_block = true;
+            }else{ 
                 is_block = false;
-                let t_text = nom_buf.iter().collect::<String>();
-                param.show(t_text);
-                cmd_parser(param, &cmd_buf);
-                
-                cmd_buf.clear();
-                nom_buf.clear();
+                nom_buf.push(c);
+            }
+            '}' => if is_escape{
+                if is_block {
+                    is_escape = false;
+                    is_block = false;
+                    let t_text = nom_buf.iter().collect::<String>();
+                    param.show(t_text);
+                    cmd_parser(param, &cmd_buf);
+                    
+                    cmd_buf.clear();
+                    nom_buf.clear();
+                }
+            }else{
+                nom_buf.push(c)
             }
             _ => if is_escape && is_block{
                 cmd_buf.push(c);
