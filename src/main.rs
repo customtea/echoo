@@ -9,7 +9,7 @@ mod color_text;
 #[derive(Parser, Debug)]
 #[clap(
     name = "ecohoo",
-    version = "1.2.0",
+    version = "1.2.1",
     author = "CustomTea",
     about = "colorized echo"
 )]
@@ -115,6 +115,8 @@ fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
             'n' => if !is_prefix && !is_prefix_end{
                 is_prefix = true;
                 is_style = Some(false);
+            }else{
+                cmd.push(*c);
             }
             '_' => if is_prefix{
                 is_prefix = true;
@@ -128,6 +130,7 @@ fn cmd_parser(param: &mut TextColorParam, cmd_buf: &Vec<char>){
         }
     }
     let cmd = cmd.iter().collect::<String>();
+    //println!("{}", cmd);
     match is_frontcolor {
         Some(front) => if front {
             match cmd.as_str() {
